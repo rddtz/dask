@@ -1808,10 +1808,14 @@ class Array(DaskMethodsMixin):
 
         return svg(self.chunks, size=size)
 
-    def to_hdf5(self, filename, datapath, **kwargs):
+    def to_hdf5(self, filename, datapath, use_vds=False, **kwargs):
         """Store array in HDF5 file
 
         >>> x.to_hdf5('myfile.hdf5', '/x')  # doctest: +SKIP
+
+        Can also use HDF5 virtual datasets to store arrays with:
+
+        >>> x.to_hdf5('myfile.hdf5', '/x', use_vds=True)  # doctest: +SKIP
 
         Optionally provide arguments as though to ``h5py.File.create_dataset``
 
@@ -5712,6 +5716,9 @@ def to_hdf5(filename, *args, chunks=True, use_vds=False, **kwargs):
     chunks: tuple or ``True``
         Chunk shape, or ``True`` to pass the chunks from the dask array.
         Defaults to ``True``.
+    use_vds: bool
+        Whether to use HDF5 Virtual Dataset to store the data. If False, all data will be stored in the same file. If True, each chunk will be stored in a separate file, and a VDS will be created to link them together.
+        Defaults to ``False``.
 
     Examples
     --------
