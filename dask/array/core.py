@@ -5818,11 +5818,7 @@ def to_hdf5_vds(fname: str, sources, **kwargs) -> None:
         return parents / new_name
 
     def save_chunk(
-        chunk: np.ndarray,
-        fname: str,
-        dataset: str,
-        block_id: tuple[int, ...],
-        **kwargs
+        chunk: np.ndarray, fname: str, dataset: str, block_id: tuple[int, ...], **kwargs
     ) -> None:
         """
         Save one chunk to a individual hdf5 file.
@@ -5899,7 +5895,11 @@ def to_hdf5_vds(fname: str, sources, **kwargs) -> None:
 
             writing_tasks.append(
                 dask.delayed(save_chunk)(
-                    chunk, fname=str(full_path), dataset=dataset, block_id=block_id, **kwargs
+                    chunk,
+                    fname=str(full_path),
+                    dataset=dataset,
+                    block_id=block_id,
+                    **kwargs,
                 )
             )
 
