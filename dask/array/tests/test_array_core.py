@@ -2483,26 +2483,27 @@ def test_to_hdf5():
             assert f["/y"].chunks == (2,)
 
 
-def test_to_hdf5_vds():
+def test_to_hdf5_vds(tmp_path):
     h5py = pytest.importorskip("h5py")
     x = da.ones((4, 4), chunks=(2, 2))
     y = da.ones(4, chunks=2, dtype="i4")
 
-    with tmpfile(".hdf5") as fn:
-        x.to_hdf5(fn, "x", use_vds=True)
-        with h5py.File(fn, mode="r+") as f:
-            d = f["x"]
-            assert_eq(d[:], x)
-            assert tuple(d.attrs["chunks"]) == (2, 2)
+    fn = str(tmp_path / "test.hdf5")
+    x.to_hdf5(fn, "x", use_vds=True)
+    with h5py.File(fn, mode="r+") as f:
+        d = f["x"]
+        assert_eq(d[:], x)
+        assert tuple(d.attrs["chunks"]) == (2, 2)
 
-    with tmpfile(".hdf5") as fn:
-        da.to_hdf5(fn, {"x": x, "y": y}, use_vds=True)
+    fn2 = str(tmp_path / "test2.hdf5")
 
-        with h5py.File(fn, mode="r+") as f:
-            assert_eq(f["x"][:], x)
-            assert tuple(f["x"].attrs["chunks"]) == (2, 2)
-            assert_eq(f["y"][:], y)
-            assert tuple(f["y"].attrs["chunks"]) == (2,)
+    da.to_hdf5(fn2, {"x": x, "y": y}, use_vds=True)
+
+    with h5py.File(fn2, mode="r+") as f:
+        assert_eq(f["x"][:], x)
+        assert tuple(f["x"].attrs["chunks"]) == (2, 2)
+        assert_eq(f["y"][:], y)
+        assert tuple(f["y"].attrs["chunks"]) == (2,)
 
 
 def test_to_dask_dataframe():
