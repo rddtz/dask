@@ -5808,7 +5808,7 @@ def to_hdf5_distributed(fname: str, sources) -> None:
             Filename for the chunk of position block_id.
         """
 
-        path = pathlib.Path(fname).expanduser().resolve()
+        path = pathlib.Path(fname)
         parents, name, suffix = path.parents[0], path.stem, path.suffix
         chunk_str = "-".join(map(str, chunkid))
 
@@ -5887,7 +5887,7 @@ def to_hdf5_distributed(fname: str, sources) -> None:
             ds = f.create_virtual_dataset(dataset, layout, fillvalue=-1)
             ds.attrs["chunks"] = chunk_shape
 
-    full_path = pathlib.Path(fname).expanduser().resolve()
+    full_path = pathlib.Path(fname)
 
     writing_tasks = []
     for dataset, arr in sources.items():
