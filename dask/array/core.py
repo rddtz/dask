@@ -5737,8 +5737,6 @@ def to_hdf5(filename, *args, chunks=True, distributed=False, **kwargs):
     da.store
     h5py.File.create_dataset
     """
-
-    print(args)
     if len(args) == 1 and isinstance(args[0], dict):
         data = args[0]
     elif len(args) == 2 and isinstance(args[0], str) and isinstance(args[1], Array):
