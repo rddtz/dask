@@ -5701,7 +5701,7 @@ def concatenate_axes(arrays, axes):
     return concatenate3(transposelist(arrays, axes, extradims=extradims))
 
 
-def to_hdf5(filename, *args, chunks=True, distributed=False, **kwargs):
+def to_hdf5(filename, *args, chunks=True, use_vds=False, **kwargs):
     """Store arrays in HDF5 file
 
     This saves several dask arrays into several datapaths in an HDF5 file.
@@ -5746,8 +5746,8 @@ def to_hdf5(filename, *args, chunks=True, distributed=False, **kwargs):
 
     import h5py
 
-    if distributed:
-        to_hdf5_distributed(filename, data)
+    if use_vds:
+        to_hdf5_vds(filename, data, **kwargs)
     else:
         with h5py.File(filename, mode="a") as f:
             dsets = [
@@ -5763,7 +5763,7 @@ def to_hdf5(filename, *args, chunks=True, distributed=False, **kwargs):
             store(list(data.values()), dsets)
 
 
-def to_hdf5_distributed(fname: str, sources) -> None:
+def to_hdf5_vds(fname: str, sources, **kwargs) -> None:
     """
     Store arrays in HDF5 file (using HDF5 VDS)
 
@@ -5822,6 +5822,7 @@ def to_hdf5_distributed(fname: str, sources) -> None:
         fname: str,
         dataset: str,
         block_id: tuple[int, ...],
+        **kwargs
     ) -> None:
         """
         Save one chunk to a individual hdf5 file.
@@ -5841,7 +5842,7 @@ def to_hdf5_distributed(fname: str, sources) -> None:
         filename = chunk_fname(fname, dataset, block_id)
 
         with h5py.File(filename, "w") as f:
-            f.create_dataset(dataset, data=chunk, chunks=chunk.shape)
+            f.create_dataset(dataset, data=chunk, chunks=chunk.shape, **kwargs)
 
     def create_vds(
         fname: str | pathlib.Path,
@@ -5898,7 +5899,7 @@ def to_hdf5_distributed(fname: str, sources) -> None:
 
             writing_tasks.append(
                 dask.delayed(save_chunk)(
-                    chunk, fname=str(full_path), dataset=dataset, block_id=block_id
+                    chunk, fname=str(full_path), dataset=dataset, block_id=block_id, **kwargs
                 )
             )
 
