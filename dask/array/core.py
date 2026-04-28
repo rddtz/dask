@@ -5871,7 +5871,7 @@ def to_hdf5_vds(fname: str, sources, **kwargs) -> None:
 
         for block_id in np.ndindex(nb_chunks_per_dim):
             name = chunk_fname(fname, dataset, block_id)
-            vsource = h5py.VirtualSource(name, dataset, shape=chunk_shape)
+            vsource = h5py.VirtualSource(name.name, dataset, shape=chunk_shape)
 
             selection = tuple(
                 slice(idx * size, (idx + 1) * size)

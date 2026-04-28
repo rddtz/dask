@@ -2526,25 +2526,23 @@ def test_to_hdf5_vds_move(tmp_path):
 
 
 def test_to_hdf5_vds_missing_chunks(tmp_path):
-    import shutil
+    import os
 
     h5py = pytest.importorskip("h5py")
     x = da.ones((4, 4), chunks=(2, 2))
 
-    src = tmp_path / "src"
-    src.mkdir()
-    x.to_hdf5(str(src / "test.hdf5"), "x", use_vds=True)
+    fn = str(tmp_path / "test.hdf5")
+    x.to_hdf5(fn, "x", use_vds=True)
 
-    # Move only the main VDS file, leaving chunk files behind in src
-    dst = tmp_path / "dst"
-    dst.mkdir()
-    shutil.move(str(src / "test.hdf5"), str(dst / "test.hdf5"))
+    for f in os.listdir(str(tmp_path)):
+        if f.startswith(".test-") and f.endswith(".hdf5"):
+            (tmp_path / f).unlink()
 
-    # Chunk files are missing, so HDF5 fills with the fill value (-1)
-    with h5py.File(dst / "test.hdf5", mode="r") as f:
-        d = f["x"]
-        assert not np.array_equal(d, x.compute())
-        assert np.all(d == -1)
+    with h5py.File(fn, mode="r") as f:
+        data = f["x"][:]
+
+    assert not np.array_equal(data, x.compute())
+    assert np.all(data == -1)
 
 
 def test_to_dask_dataframe():
