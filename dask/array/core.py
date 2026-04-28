@@ -5771,8 +5771,10 @@ def to_hdf5(filename, *args, chunks=True, use_vds=False, **kwargs):
 
 
 def to_hdf5_vds(fname: str, sources, **kwargs) -> None:
-    """
-    Store arrays in HDF5 file (using HDF5 VDS)
+    """Store arrays in HDF5 file using HDF5 VDS.
+
+    Useful for distributed writes as each chunk is stored in a separate file
+    as an individual task and then after exposed as one logical dataset.
 
     Parameters
     ----------
