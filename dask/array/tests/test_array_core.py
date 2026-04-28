@@ -2506,6 +2506,47 @@ def test_to_hdf5_vds(tmp_path):
         assert tuple(f["y"].attrs["chunks"]) == (2,)
 
 
+def test_to_hdf5_vds_move(tmp_path):
+    import shutil
+
+    h5py = pytest.importorskip("h5py")
+    x = da.ones((4, 4), chunks=(2, 2))
+
+    src = tmp_path / "src"
+    src.mkdir()
+    x.to_hdf5(str(src / "test.hdf5"), "x", use_vds=True)
+
+    dst = tmp_path / "dst"
+    shutil.move(str(src), str(dst))
+
+    with h5py.File(dst / "test.hdf5", mode="r") as f:
+        d = f["x"]
+        assert_eq(d[:], x)
+        assert tuple(d.attrs["chunks"]) == (2, 2)
+
+
+def test_to_hdf5_vds_missing_chunks(tmp_path):
+    import shutil
+
+    h5py = pytest.importorskip("h5py")
+    x = da.ones((4, 4), chunks=(2, 2))
+
+    src = tmp_path / "src"
+    src.mkdir()
+    x.to_hdf5(str(src / "test.hdf5"), "x", use_vds=True)
+
+    # Move only the main VDS file, leaving chunk files behind in src
+    dst = tmp_path / "dst"
+    dst.mkdir()
+    shutil.move(str(src / "test.hdf5"), str(dst / "test.hdf5"))
+
+    # Chunk files are missing, so HDF5 fills with the fill value (-1)
+    with h5py.File(dst / "test.hdf5", mode="r") as f:
+        d = f["x"]
+        assert not np.array_equal(d, x.compute())
+        assert np.all(d == -1)
+
+
 def test_to_dask_dataframe():
     pytest.importorskip("pandas")
     dd = pytest.importorskip("dask.dataframe")
